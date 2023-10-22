@@ -40,7 +40,9 @@ function sendUdpatedUserList() {
   Array.from(wsServer.clients).forEach((client) => 
     client.send(JSON.stringify({
       messageType: 'updateUserList',
-      data: Array.from(wsServer.clients).map((client) => ({userName: client.userName, color: client.color}))
+      data: Array.from(wsServer.clients)
+        .filter((client) => client.userName !== undefined)
+        .map((client) => ({id:client.id, userName: client.userName, color: client.color}))
     })));
 }
 
