@@ -45,7 +45,7 @@ When you're done, please push to a private repo on GitHub and share it with webt
 
 ## feedback notes
 
-- Test took me 6h, with the bulk of it making crap. I personally think it was too long but since I didn't knew React it is what it is.
-- I never coded in React and I got to admit that I struggle with the concept of State and Ref, as a result I've added code that I'm sure will look comically stupid (look up for "stupid" in the comments)
-- Some of the requested fonctionalities are missing : I didn't userstand the "can" in "Users can have the random names generated on the fly", so I opted to generate it at the refresh. As a result the ability to keep the same color couldn't be implemented since the name changes all the time. Has to do also with my lack of understand of the React lifecycle.
+- Test took me 6h, with the bulk of it making crap. I personally think it was too long but since I didn't knew React it is what it is. Unfortunatly I couldn't allocated more time for this this weekend.
+- I never coded in React and I got to admit that I struggled with the concept of State and Ref, as a result I've added code that I'm sure will look comically stupid (look up for "stupid" in the comments)
+- Some of the requested fonctionalities are missing : I didn't userstand the "can" in "Users can have the random names generated on the fly" (it should be either "must" or "must not"), so I opted to generate it at the refresh. As a result the ability to keep the same color couldn't be implemented since the name changes all the time. Has to do also with my lack of understand of the React lifecycle.
 - Code could be much faster if ws message were sent in binary form.
