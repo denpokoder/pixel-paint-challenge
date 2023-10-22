@@ -13,16 +13,15 @@ function CompareBitmap(before, after, width, height)
   var scanx;
   var scany;
   var scanIndex = 0; 
-  var numDiff = 0;
-  var changes = new Array();
+  var changes = [];
   for(scany = 0; scany < height; scany++)  
   {
     for(scanx = 0; scanx < width; scanx++)  
     {
-      if( before[scanIndex] != after[scanIndex] || 
-          before[scanIndex + 1] != after[scanIndex + 1] || 
-          before[scanIndex + 2] != after[scanIndex + 2] || 
-          before[scanIndex + 3] != after[scanIndex + 3] )
+      if( before[scanIndex] !== after[scanIndex] || 
+          before[scanIndex + 1] !== after[scanIndex + 1] || 
+          before[scanIndex + 2] !== after[scanIndex + 2] || 
+          before[scanIndex + 3] !== after[scanIndex + 3] )
       {
         changes.push({index:scanIndex,r:after[scanIndex],g:after[scanIndex+1],b:after[scanIndex+2],a:after[scanIndex+3]});
       }
@@ -61,7 +60,6 @@ function getUniqueId() {
   return Math.random().toString(16).slice(2);
 }
 
-var localUsername = "";
 var bitmapDataMemory = new Uint8Array(canvasSize.width * canvasSize.height * 4);
 
 function App() {
@@ -73,12 +71,12 @@ function App() {
   const userIdRef = useRef(getUniqueId());
   const websocketRef = useRef(getWebSocket(userIdRef.current));
   const drawColorRef = useRef(randomColor());
+  const mousedownRef = useRef(false);
+  const mouseinsideRef = useRef(false);
 
   const [color, setColor] = useState(drawColorRef.current);
   const [userName, setUserName] = useState(null);
   const [users, setUsers] = useState([]);
-  var mousedown = false;
-  var mouseinside = false;
 
   useEffect(() => {
     console.log("useEffect");
@@ -91,8 +89,8 @@ function App() {
     const ws = websocketRef.current;
 
     canvas.onmousedown = function(e) {
-      mousedown = true;
-      mouseinside = true;
+      mousedownRef.current = true;
+      mouseinsideRef.current = true;
       ctx.strokeStyle = drawColorRef.current;
       ctx.lineWidth = 0.5;
       ctx.beginPath();
@@ -100,7 +98,7 @@ function App() {
     };
 
     canvas.onmousemove = function(e) {
-      if (mousedown && mouseinside) {
+      if (mousedownRef.current && mouseinsideRef.current) {
         var width = canvasSize.width;
         var height = canvasSize.height;
 
@@ -115,31 +113,31 @@ function App() {
     };
   
     canvas.onmouseenter = function(e) {
-      if (mousedown) {
-        mouseinside = true;
+      if (mousedownRef.current) {
+        mouseinsideRef.current = true;
         ctx.beginPath();
         ctx.moveTo(e.offsetX+0.5, e.offsetY+0.5);
       }
     };  
 
     canvas.onmouseleave = function(e) {
-      if (mousedown) {
-        mouseinside = false;
+      if (mousedownRef.current) {
+        mouseinsideRef.current = false;
         ctx.lineTo(e.offsetX+0.5, e.offsetY+0.5);
         ctx.stroke();
       }
     };
 
     canvas.onmouseup = function(e) {
-      mousedown = false;
-      mouseinside = false;
+      mousedownRef.current = false;
+      mouseinsideRef.current = false;
       ctx.lineTo(e.offsetX+0.5, e.offsetY+0.5);
       ctx.stroke();
   };
 
     window.onmouseup = function(e) {
-      mousedown = false;
-      mouseinside = false;
+      mousedownRef.current = false;
+      mouseinsideRef.current = false;
     };
 
 
@@ -157,20 +155,20 @@ function App() {
 
     ws.onmessage = (e) => {
       const message = JSON.parse(e.data);
+      var width = canvasSize.width;
+      var height = canvasSize.height;
+      var bitmapData;
+
       console.log(message);
       switch (message.messageType) {
         case 'updateBitmap':
-          var width = canvasSize.width;
-          var height = canvasSize.height;
-          var bitmapData = ctx.getImageData(0, 0, width, height);
+          bitmapData = ctx.getImageData(0, 0, width, height);
           ApplyDifference(bitmapData.data, message.data);
           ctx.putImageData(bitmapData, 0, 0);
           break;
 
         case 'initBitmap':
-          var width = canvasSize.width;
-          var height = canvasSize.height;
-          var bitmapData = ctx.getImageData(0, 0, width, height);
+          bitmapData = ctx.getImageData(0, 0, width, height);
           initBitmap(bitmapData.data, message.data, width, height)
           ctx.putImageData(bitmapData, 0, 0);
           break;
@@ -178,9 +176,11 @@ function App() {
         case 'error':
           console.error(message);
           break;
+
         case 'updateUserList':
           setUsers(message.data);
            break;
+           
         default:
           console.error('Unrecognized message format from server');
       }
@@ -189,7 +189,6 @@ function App() {
 
   useEffect(() => { 
     drawColorRef.current = color;
-    localUsername = userName;
     const ws = websocketRef.current;
 
     try{
